@@ -14,6 +14,34 @@ fn main() {
     println!("Number of increments: {}", result);
 }
 
+/*pub trait SlidingWindow: Iterator {
+    fn window(self, window_size: usize) -> Skip<Self>
+    where
+        Self: Sized,
+        Self::Item: Ord;
+}
+
+impl<I> SlidingWindow for I
+where
+    I: Iterator,
+{
+    fn window(self, window_size: usize) -> Skip<I>
+    where
+        Self: Sized,
+        Self::Item: Sized,
+    {
+        self.scan(VecDeque::<<I as Iterator>::Item>::new(), |state, x| {
+            state.push_back(x);
+            if state.len() > window_size {
+                state.pop_front();
+            }
+            Some(state.clone())
+        })
+        .map(|scan| scan.iter().sum())
+        .skip(window_size /*-1*/)
+    }
+}*/
+
 // TODO: use iterator, so we do not need to put everything in memory
 fn count_increases(input: &str) -> i32 {
     struct ScanState {
@@ -25,16 +53,12 @@ fn count_increases(input: &str) -> i32 {
     input
         .lines()
         .map(|line| line.parse::<i32>().expect("Cannot convert line to i32"))
-        .scan(VecDeque::<i32>::new(), |state, cur_elem| {
-            state.push_back(cur_elem);
-            if state.len() < 3 {
-                return Some(0); // TODO: why does None abort the stream?
-            }
+        .scan(VecDeque::<i32>::new(), |state, x| {
+            state.push_back(x);
             if state.len() > 3 {
                 state.pop_front();
             }
-            let sum: i32 = state.iter().sum();
-            Some(sum)
+            Some(scan.iter().sum())
         })
         .skip(2) // TODO: abstract the sliding window into a function which can be added to the iterator
         .scan(
