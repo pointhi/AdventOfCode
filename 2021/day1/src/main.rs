@@ -1,3 +1,4 @@
+use std::collections::vec_deque::VecDeque;
 use std::env;
 use std::fs;
 
@@ -24,6 +25,18 @@ fn count_increases(input: &str) -> i32 {
     input
         .lines()
         .map(|line| line.parse::<i32>().expect("Cannot convert line to i32"))
+        .scan(VecDeque::<i32>::new(), |state, cur_elem| {
+            state.push_back(cur_elem);
+            if state.len() < 3 {
+                return Some(0); // TODO: why does None abort the stream?
+            }
+            if state.len() > 3 {
+                state.pop_front();
+            }
+            let sum: i32 = state.iter().sum();
+            Some(sum)
+        })
+        .skip(2) // TODO: abstract the sliding window into a function which can be added to the iterator
         .scan(
             ScanState {
                 is_first: true,
@@ -77,7 +90,7 @@ mod tests {
 
     #[test]
     fn count_increases_increment() {
-        assert_eq!(count_increases("100\n101"), 1);
+        assert_eq!(count_increases("100\n101"), 0);
     }
 
     #[test]
@@ -87,11 +100,18 @@ mod tests {
 
     #[test]
     fn count_increases_increment_decrement() {
-        assert_eq!(count_increases("100\n101\n100"), 1);
+        assert_eq!(count_increases("100\n101\n100"), 0);
     }
 
     #[test]
     fn count_increases_decrement_increment() {
-        assert_eq!(count_increases("100\n99\n100"), 1);
+        assert_eq!(count_increases("100\n99\n100"), 0);
+    }
+
+    #[test]
+    fn count_increases_window() {
+        assert_eq!(count_increases("1\n1\n1\n1"), 0);
+        assert_eq!(count_increases("1\n1\n1\n2"), 1);
+        assert_eq!(count_increases("1\n1\n1\n2\n2"), 2);
     }
 }
